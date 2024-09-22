@@ -1,12 +1,11 @@
-// src/components/Search.jsx
 import React, { useState } from "react";
 import { fetchUserData } from "../services/githubService";
 
 const Search = () => {
   const [username, setUsername] = useState("");
-  const [location, setLocation] = useState(""); // New field for location
-  const [minRepos, setMinRepos] = useState(""); // New field for min repositories
-  const [userData, setUserData] = useState(null);
+  const [location, setLocation] = useState("");
+  const [minRepos, setMinRepos] = useState("");
+  const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,8 +15,8 @@ const Search = () => {
     setError(null);
 
     try {
-      const data = await fetchUserData({ username, location, minRepos }); // Pass new params
-      setUserData(data);
+      const data = await fetchUserData({ username, location, minRepos });
+      setUserData(data); // Ensure this is an array to use map()
     } catch (error) {
       setError("Looks like we can't find any users matching the criteria");
     } finally {
@@ -65,26 +64,29 @@ const Search = () => {
 
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      {userData && (
+
+      {userData.length > 0 && (
         <div className="mt-4">
-          <img
-            src={userData.avatar_url}
-            alt={userData.login}
-            className="w-16 h-16 rounded-full"
-          />
-          <h3 className="text-lg font-bold">
-            {userData.name || userData.login}
-          </h3>
-          <p>{userData.location}</p>
-          <p>Repositories: {userData.public_repos}</p>
-          <a
-            href={userData.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600"
-          >
-            Visit GitHub Profile
-          </a>
+          {userData.map((user) => (
+            <div key={user.id} className="p-4 border-b">
+              <img
+                src={user.avatar_url}
+                alt={user.login}
+                className="w-16 h-16 rounded-full"
+              />
+              <h3 className="text-lg font-bold">{user.login}</h3>
+              <p>Location: {user.location || "N/A"}</p>
+              <p>Repositories: {user.public_repos}</p>
+              <a
+                href={user.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600"
+              >
+                Visit GitHub Profile
+              </a>
+            </div>
+          ))}
         </div>
       )}
     </div>
